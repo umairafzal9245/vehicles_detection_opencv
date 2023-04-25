@@ -4,14 +4,35 @@ from PIL import Image, ImageTk
 import numpy as np
 from object_detection import ObjectDetection
 
-#vehicle detection 
-#vehicle tracking and counting
-#vehicle type estimation (car, bus, truck, bike, etc.)
-#vehicle speed estimation
-#vehicle color estimation
-#vehicle size estimation
-#vehicle flow rate estimation
-#traffic density estimation
+def type_of_vehicle(class_id):
+    if class_id == 1:
+        return "Bicycle"
+    elif class_id == 2:
+        return "Car"
+    elif class_id == 3:
+        return "Motorcycle"
+    elif class_id == 5:
+        return "Bus"
+    elif class_id == 7:
+        return "Truck"
+    else :
+        return "Unknown"
+
+
+def speed_of_vehicle():
+    pass
+
+def color_of_vehicle():
+    pass
+
+def size_of_vehicle():
+    pass
+
+def flow_rate_of_vehicle():
+    pass
+
+def density_of_vehicle():
+    pass
 
 
 class Application(tk.Frame):
@@ -80,13 +101,16 @@ class Application(tk.Frame):
 
         (class_ids, confidences, boxes) = self.od.detect(frame)
         
-        for box in boxes:
+        for i in range(len(boxes)):
+            class_id = class_ids[i]
+            box = boxes[i]
             x,y,w,h = box
             cv2.rectangle(frame, (x,y), (x+w,y+h), (0,255,0), 2)
-            cv2.putText(frame, "Vehicle Type", (x,y-10), cv2.FONT_HERSHEY_SIMPLEX, 0.3, (0,255,0), 1)
+            cv2.putText(frame, "Vehicle Type "+type_of_vehicle(class_id), (x,y-10), cv2.FONT_HERSHEY_SIMPLEX, 0.3, (0,255,0), 1)
             cv2.putText(frame, "Speed: 50km/h", (x,y+h+10), cv2.FONT_HERSHEY_SIMPLEX, 0.3, (0,255,0), 1)
             cv2.putText(frame, "Color: Red", (x,y+h+20), cv2.FONT_HERSHEY_SIMPLEX, 0.3, (0,255,0), 1)
             cv2.putText(frame, "Size: 5m", (x,y+h+30), cv2.FONT_HERSHEY_SIMPLEX, 0.3, (0,255,0), 1)
+
 
         self.vehicle_count_text.set("Vehicle Count: " + str(self.totalvehicles))
         self.vehicle_flow_rate_text.set("Vehicle Flow Rate: " + str(self.vehicle_flow_rate))
