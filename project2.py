@@ -65,7 +65,7 @@ class Application(tk.Frame):
 
         self.od = ObjectDetection()
 
-        self.cap = cv2.VideoCapture('./los_angeles.mp4')
+        self.cap = cv2.VideoCapture('../los_angeles.mp4')
 
         self.create_widgets()
 
