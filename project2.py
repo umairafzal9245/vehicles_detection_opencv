@@ -19,8 +19,8 @@ def type_of_vehicle(class_id):
         return "Unknown"
 
 
-def speed_of_vehicle():
-    pass
+def speed_of_vehicle(dist, time):
+    return dist//time
 
 def color_of_vehicle():
     pass
@@ -33,6 +33,15 @@ def flow_rate_of_vehicle():
 
 def density_of_vehicle():
     pass
+
+def find_centroid(x,y,w,h):
+    x1 = x
+    y1 = y
+    x2 = x+w
+    y2 = y+h
+    cx = (x1+x2)//2
+    cy = (y1+y2)//2
+    return cx,cy
 
 
 class Application(tk.Frame):
@@ -51,6 +60,8 @@ class Application(tk.Frame):
         self.totalvehicles = 0
         self.vehicle_density = 0
         self.vehicle_flow_rate = 0
+
+        self.trackvehicles = {}
 
         self.od = ObjectDetection()
 
@@ -103,14 +114,32 @@ class Application(tk.Frame):
         
         for i in range(len(boxes)):
             class_id = class_ids[i]
-            box = boxes[i]
-            x,y,w,h = box
+            x,y,w,h = boxes[i]
+            
             cv2.rectangle(frame, (x,y), (x+w,y+h), (0,255,0), 2)
             cv2.putText(frame, "Vehicle Type "+type_of_vehicle(class_id), (x,y-10), cv2.FONT_HERSHEY_SIMPLEX, 0.3, (0,255,0), 1)
-            cv2.putText(frame, "Speed: 50km/h", (x,y+h+10), cv2.FONT_HERSHEY_SIMPLEX, 0.3, (0,255,0), 1)
-            cv2.putText(frame, "Color: Red", (x,y+h+20), cv2.FONT_HERSHEY_SIMPLEX, 0.3, (0,255,0), 1)
-            cv2.putText(frame, "Size: 5m", (x,y+h+30), cv2.FONT_HERSHEY_SIMPLEX, 0.3, (0,255,0), 1)
+            
+            cx,cy = find_centroid(x,y,w,h)
+            new_vehicle = True
+            for id, vehicle in self.trackvehicles.items():
 
+                center = vehicle['center']
+                
+                dist = np.sqrt((center[0]-cx)**2 + (center[1]-cy)**2)
+                
+                if dist < 30:
+                    new_vehicle = False
+                    self.trackvehicles[id]['center'] = (cx,cy)
+                    cv2.putText(frame, str(id), (cx,cy), cv2.FONT_HERSHEY_SIMPLEX, 5, (0,255,0), 2)
+                    if cx > self.canvas_width - 50 or cy > self.canvas_height - 50:
+                        del self.trackvehicles[id]
+                        break
+                
+            if new_vehicle:
+                self.totalvehicles += 1
+                self.trackvehicles[self.totalvehicles] = {'center':(cx,cy),'time':0,'color':'blue','size':0}
+            
+            
 
         self.vehicle_count_text.set("Vehicle Count: " + str(self.totalvehicles))
         self.vehicle_flow_rate_text.set("Vehicle Flow Rate: " + str(self.vehicle_flow_rate))
